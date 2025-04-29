@@ -36,7 +36,11 @@ export default async function RootLayout({
             {children}        
           </main>
           <footer className="w-full text-center text-sm py-2 absolute bottom-0">
-            <span className="text-green-400 font-mono">Built by Santi</span>
+          <span className="text-green-400 font-mono">
+            <a href="https://x.com/gabriell_santi" target="_blank" rel="noopener noreferrer">
+              Built by Santi
+            </a>
+          </span>
           </footer>
         </div>
         </ContextProvider>
