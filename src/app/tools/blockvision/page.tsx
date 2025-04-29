@@ -1,33 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // 👈 importa o useRouter
+import { useRouter } from "next/navigation"; 
+import HeaderTyping from "@/components/header";
 
 export default function HomePage() {
-  const fullText = "Tools/Alldomains";
-  const [displayedText, setDisplayedText] = useState("");
-  const [index, setIndex] = useState(0);
-  const router = useRouter(); // 👈 inicializa o router
+  const router = useRouter(); 
 
-  useEffect(() => {
-    if (index < fullText.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedText((prev) => prev + fullText[index]);
-        setIndex((prev) => prev + 1);
-      }, 50);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [index, fullText]);
 
   return (
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
       {/* TÍTULO NO TOPO */}
       <div className="absolute top-8 w-full flex justify-center">
-        <h1 className="text-3xl flex items-center">
-          {displayedText}
-          <span className="ml-2 animate-blink">█</span>
-        </h1>
+        <HeaderTyping 
+          text="Tools/Blockvision" 
+          className="text-3xl" 
+          speed={50} 
+        />
       </div>
 
       {/* BOTÕES CENTRALIZADOS */}

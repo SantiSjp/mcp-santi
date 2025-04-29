@@ -34,3 +34,8 @@ body {
   animation: blink 1s step-start infinite;
 }
 
+.disabled-button {
+  opacity: 0.4; /* Deixa o botão apagado */
+  pointer-events: none; /* Impede qualquer clique */
+  cursor: not-allowed; /* Mostra o cursor bloqueado */
+}

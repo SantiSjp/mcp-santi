@@ -1,8 +1,6 @@
-// src/tools/monorail/getWalletBalancesTool.ts
 import { z } from "zod";
 import { getWalletBalances } from "../../clients/monorail/monorailApi";
 
-// Define o input da ferramenta
 const inputSchema = z.object({
   address: z.string().describe("Monad wallet address to fetch token balances"),
 });
@@ -16,33 +14,49 @@ export const getWalletBalancesTool = {
       const balances = await getWalletBalances(address);
 
       if (!balances.length) {
+        const response = {
+          status: "empty",
+          message: `No token balances found for address ${address}.`,
+          metadata: { address },
+          tokens: []
+        };
+
         return {
           content: [{
             type: "text" as const,
-            text: `📭 No token balances found for address ${address}.`
+            text: JSON.stringify(response)
           }]
         };
       }
 
-      const summary = balances
-        .map((token: any, idx: number) => {
-          return `${idx + 1}. ${token.name || "Unnamed Token"} (${token.symbol || "?"})\n` +
-                 `   🪙 Balance: ${token.balance}\n` +
-                 `   📜 Categories: ${token.categories.join(", ") || "None"}`;
-        })
-        .join("\n\n");
+      const response = {
+        status: "success",
+        metadata: { address },
+        tokens: balances.map((token: any) => ({
+          name: token.name || "Unnamed Token",
+          symbol: token.symbol || "?",
+          balance: token.balance ?? null,
+          categories: token.categories.length > 0 ? token.categories : []
+        }))
+      };
 
       return {
         content: [{
           type: "text" as const,
-          text: `👜 Token Balances for ${address}:\n\n${summary}`
+          text: JSON.stringify(response)
         }]
       };
     } catch (error) {
+      const response = {
+        status: "error",
+        message: error instanceof Error ? error.message : String(error),
+        metadata: { address }
+      };
+
       return {
         content: [{
           type: "text" as const,
-          text: `❌ Error fetching wallet balances: ${error instanceof Error ? error.message : String(error)}`
+          text: JSON.stringify(response)
         }],
         isError: true
       };

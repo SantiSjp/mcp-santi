@@ -1,29 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createClient } from "@/lib/client";
 import HeaderTyping from "@/components/header";
 
-const CHAINS = [
-  "monad-testnet","ethereum", "abstract", "apechain", "arbitrum", "base", "berachain", "bsc", "polygon", "sei"
-];
-
-export default function HomePage() {
-  const fullText = "Tools/MagicEden/GetUserCollections";
+export default function TokensPage() {
+  const fullText = "Tools/Monorail/GetTokens";
   const [displayedText, setDisplayedText] = useState("");
   const [index, setIndex] = useState(0);
 
-  const [chain, setChain] = useState("monad-testnet");
-  const [address, setAddress] = useState("");
-
+  const [search, setSearch] = useState("");
+  const [tokens, setTokens] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [collections, setCollections] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
 
-  const [displayPage, setDisplayPage] = useState(1);
+  const [page, setPage] = useState(0);
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
@@ -36,20 +28,18 @@ export default function HomePage() {
     }
   }, [index, fullText]);
 
-  const fetchUserCollections = async () => {
+  const fetchTokens = async () => {
     setLoading(true);
-    setCollections([]);
+    setTokens([]);
     setError(null);
     setChecked(false);
-    
+
     const client = await createClient();
-    console.log("chain", chain);
-    console.log("address",address);
 
     try {
       const result = await client.callTool({
-        name: "magiceden_get_user_collections",
-        arguments: { chain, user: address.trim() },
+        name: "monorail_get_tokens",
+        arguments: { find: search.trim(), limit: "50", offset: "0" },
       });
 
       const content = (result?.content as { type: string; text: string }[])?.[0];
@@ -59,15 +49,14 @@ export default function HomePage() {
 
         if (parsed.status === "error") {
           setError(parsed.message);
-        } else if (parsed.collections) {
-          setCollections(parsed.collections);
+        } else if (parsed.tokens) {
+          setTokens(parsed.tokens);
         } else {
           setError("Unexpected response format.");
         }
       } else {
         setError("Unexpected response format.");
       }
-      
     } catch (error) {
       console.error(error);
       setError(error instanceof Error ? error.message : String(error));
@@ -75,69 +64,56 @@ export default function HomePage() {
       client.close();
       setLoading(false);
       setChecked(true);
-      setDisplayPage(1);
+      setPage(0);
     }
   };
 
-  const handleNextDisplayPage = () => {
-    if (displayPage * ITEMS_PER_PAGE < collections.length) {
-      setDisplayPage(displayPage + 1);
-    }
-  };
-
-  const handlePrevDisplayPage = () => {
-    if (displayPage > 1) {
-      setDisplayPage(displayPage - 1);
-    }
-  };
-
-  const paginatedCollections = collections.slice(
-    (displayPage - 1) * ITEMS_PER_PAGE,
-    displayPage * ITEMS_PER_PAGE
+  const paginatedTokens = tokens.slice(
+    page * ITEMS_PER_PAGE,
+    (page + 1) * ITEMS_PER_PAGE
   );
+
+  const handleNextPage = () => {
+    if ((page + 1) * ITEMS_PER_PAGE < tokens.length) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 0) {
+      setPage(page - 1);
+    }
+  };
 
   return (
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
-      {/* TÍTULO */}
+      {/* Título */}
       <div className="absolute top-8 w-full flex justify-center">
         <HeaderTyping 
-          text="Tools/MagicEden/GetUserCollections" 
+          text="Tools/Monorail/GetTokens" 
           className="text-3xl" 
           speed={50} 
         />
       </div>
 
-      {/* FORMULÁRIO */}
+      {/* Formulário */}
       <div className="flex flex-1 flex-col justify-center items-center gap-6 mt-32">
-        {/* Linha de Inputs */}
         <div className="flex gap-4 flex-wrap justify-center w-full max-w-7xl px-4">
-          <select
-            value={chain}
-            onChange={(e) => setChain(e.target.value)}
-            className="bg-black border-2 border-green-400 px-4 py-2 text-green-400 text-sm focus:outline-none focus:bg-green-400 focus:text-black transition-all w-52"
-          >
-            {CHAINS.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
           <input
             type="text"
-            placeholder="Enter user wallet address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="bg-black border-2 border-green-400 px-4 py-2 text-green-400 placeholder-green-600 text-sm focus:outline-none focus:bg-green-400 focus:text-black transition-all w-[500px]"
+            placeholder="Optional: Search token by name or symbol"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-black border-2 border-green-400 px-4 py-2 text-green-400 placeholder-green-600 text-sm focus:outline-none focus:bg-green-400 focus:text-black transition-all w-96"
           />
         </div>
 
         <button
-          onClick={fetchUserCollections}
-          disabled={loading || address.trim() === ""}
+          onClick={fetchTokens}
+          disabled={loading}
           className="mt-4 border-2 border-green-400 px-8 py-4 text-xl hover:bg-green-400 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Loading..." : "Fetch Collections"}
+          {loading ? "Loading..." : "Fetch Tokens"}
         </button>
 
         {/* Resultado */}
@@ -148,24 +124,26 @@ export default function HomePage() {
             </div>
           )}
 
-          {collections.length > 0 && (
+          {tokens.length > 0 && (
             <div className="border-2 border-green-400 p-4 w-full overflow-x-auto">
               <table className="w-full text-left border-collapse break-words">
                 <thead>
                   <tr>
-                    <th className="border-b-2 border-green-400 pb-2">Collection Name</th>
-                    <th className="border-b-2 border-green-400 pb-2">Floor Price (MON)</th>
-                    <th className="border-b-2 border-green-400 pb-2">Tokens Owned</th>
-                    <th className="border-b-2 border-green-400 pb-2">Tokens On Sale</th>
+                    <th className="border-b-2 border-green-400 pb-2">Name</th>
+                    <th className="border-b-2 border-green-400 pb-2">Symbol</th>
+                    <th className="border-b-2 border-green-400 pb-2">Address</th>
+                    <th className="border-b-2 border-green-400 pb-2">Decimals</th>
+                    <th className="border-b-2 border-green-400 pb-2">Balance</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedCollections.map((col, idx) => (
+                  {paginatedTokens.map((token, idx) => (
                     <tr key={idx} className="border-t border-green-400">
-                      <td className="py-2 break-all">{col.name}</td>
-                      <td className="py-2">{col.floorPrice !== null ? `${col.floorPrice} MON` : "N/A"}</td>
-                      <td className="py-2">{col.tokensOwned !== null ? col.tokensOwned : "N/A"}</td>
-                      <td className="py-2">{col.tokensOnSale !== null ? col.tokensOnSale : "N/A"}</td>
+                      <td className="py-2 break-all">{token.name}</td>
+                      <td className="py-2">{token.symbol}</td>
+                      <td className="py-2 break-all">{token.address}</td>
+                      <td className="py-2">{token.decimals}</td>
+                      <td className="py-2">{token.balance ?? "N/A"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -173,27 +151,27 @@ export default function HomePage() {
             </div>
           )}
 
-          {checked && collections.length === 0 && !error && (
+          {checked && tokens.length === 0 && !error && (
             <div className="border-2 border-yellow-400 text-yellow-400 p-4">
-              No collections found for this user.
+              No tokens found.
             </div>
           )}
         </div>
 
         {/* Paginação */}
-        {collections.length > 0 && (
+        {tokens.length > 0 && (
           <div className="flex gap-6 mt-8 mb-12 justify-center">
             <button
-              onClick={handlePrevDisplayPage}
-              disabled={loading || displayPage === 1}
+              onClick={handlePrevPage}
+              disabled={loading || page === 0}
               className="border-2 border-green-400 px-6 py-2 hover:bg-green-400 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous Page
             </button>
-            <span className="text-green-400 self-center">Page {displayPage}</span>
+            <span className="text-green-400 self-center">Page {page + 1}</span>
             <button
-              onClick={handleNextDisplayPage}
-              disabled={loading || displayPage * ITEMS_PER_PAGE >= collections.length}
+              onClick={handleNextPage}
+              disabled={loading || (page + 1) * ITEMS_PER_PAGE >= tokens.length}
               className="border-2 border-green-400 px-6 py-2 hover:bg-green-400 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Page

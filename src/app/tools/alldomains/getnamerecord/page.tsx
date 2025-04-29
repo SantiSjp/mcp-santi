@@ -4,11 +4,9 @@ import { useEffect, useState } from "react";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createClient } from "@/lib/client";
+import HeaderTyping from "@/components/header";
 
 export default function HomePage() {
-  const fullText = "Tools/Alldomains/GetNameRecordFromDomainTld";
-  const [displayedText, setDisplayedText] = useState("");
-  const [index, setIndex] = useState(0);
   const [domainTld, setDomainTld] = useState("");
   const [loading, setLoading] = useState(false);
   const [record, setRecord] = useState<{
@@ -27,16 +25,6 @@ export default function HomePage() {
     transferrable: boolean;
   };
 
-  useEffect(() => {
-    if (index < fullText.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedText((prev) => prev + fullText[index]);
-        setIndex((prev) => prev + 1);
-      }, 50);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [index, fullText]);
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -91,10 +79,11 @@ export default function HomePage() {
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
       {/* TÍTULO NO TOPO */}
       <div className="absolute top-8 w-full flex justify-center">
-        <h1 className="text-2xl flex items-center">
-          {displayedText}
-          <span className="ml-2 animate-blink">█</span>
-        </h1>
+        <HeaderTyping 
+          text="Tools/Alldomains/GetNameRecord" 
+          className="text-3xl" 
+          speed={50} 
+        />
       </div>
 
       {/* FORMULÁRIO CENTRALIZADO */}

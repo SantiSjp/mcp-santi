@@ -4,27 +4,14 @@ import { useEffect, useState } from "react";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createClient } from "@/lib/client";
+import HeaderTyping from "@/components/header";
 
 export default function HomePage() {
-  const fullText = "Tools/Alldomains/GetUserDomains";
-  const [displayedText, setDisplayedText] = useState("");
-  const [index, setIndex] = useState(0);
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [domains, setDomains] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState(false); // 👈 novo para saber que o usuário já confirmou
-
-  useEffect(() => {
-    if (index < fullText.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedText((prev) => prev + fullText[index]);
-        setIndex((prev) => prev + 1);
-      }, 50);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [index, fullText]);
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -69,10 +56,11 @@ export default function HomePage() {
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
       {/* TÍTULO NO TOPO */}
       <div className="absolute top-8 w-full flex justify-center">
-        <h1 className="text-2xl flex items-center">
-          {displayedText}
-          <span className="ml-2 animate-blink">█</span>
-        </h1>
+        <HeaderTyping 
+          text="Tools/Alldomains/GetUserDomains" 
+          className="text-3xl" 
+          speed={50} 
+        />
       </div>
 
       {/* FORMULÁRIO CENTRALIZADO */}

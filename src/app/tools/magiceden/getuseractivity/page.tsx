@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createClient } from "@/lib/client";
+import HeaderTyping from "@/components/header";
 
 const CHAINS = [
   "ethereum", "abstract", "apechain", "arbitrum", "base", "berachain", "bsc", "monad-testnet", "polygon", "sei"
@@ -103,10 +104,11 @@ export default function HomePage() {
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
       {/* TÍTULO */}
       <div className="absolute top-8 w-full flex justify-center">
-        <h1 className="text-2xl flex items-center">
-          {displayedText}
-          <span className="ml-2 animate-blink">█</span>
-        </h1>
+        <HeaderTyping 
+          text="Tools/MagicEden/GetUserActivity" 
+          className="text-3xl" 
+          speed={50} 
+        />
       </div>
 
       {/* FORMULÁRIO */}

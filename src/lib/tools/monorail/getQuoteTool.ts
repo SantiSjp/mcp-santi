@@ -1,6 +1,6 @@
 // src/tools/monorail/getQuoteTool.ts
 import { z } from "zod";
-import { getQuote } from "../../clients/monorail/monorailQuote"; // Your quote client
+import { getQuote } from "../../clients/monorail/monorailQuote";
 
 const inputSchema = z.object({
   amount: z.string().describe("Amount to swap (human readable, e.g., 1)"),
@@ -29,38 +29,40 @@ export const getQuoteTool = {
         deadline: deadline ? Number(deadline) : undefined,
         max_hops: max_hops ? Number(max_hops) : undefined,
         excluded,
-        source
+        source,
       });
 
       const priceImpact = parseFloat(quote.compound_impact ?? "0");
 
-      const impactWarning = priceImpact > 0.2 
-        ? "\n⚠️ Warning: High price impact detected! (> 20%)"
-        : "";
-
-      const result = 
-        `🔄 Swap Quote:\n\n` +
-        `• From: ${quote.from}\n` +
-        `• To: ${quote.to}\n` +
-        `• Input Amount: ${quote.input_formatted}\n` +
-        `• Expected Output: ${quote.output_formatted}\n` +
-        `• Minimum Guaranteed Output: ${quote.min_output_formatted}\n` +
-        `• Hops: ${quote.hops}\n` +
-        `• Price Impact: ${(priceImpact * 100).toFixed(2)}%\n` +
-        impactWarning;
+      const response = {
+        status: "success",
+        metadata: {
+          from: quote.from,
+          to: quote.to,
+          amountInput: quote.input_formatted,
+          expectedOutput: quote.output_formatted,
+          minimumGuaranteedOutput: quote.min_output_formatted,
+          hops: quote.hops,
+          priceImpactPercent: Number((priceImpact * 100).toFixed(2)),
+          warning: priceImpact > 0.2 ? "High price impact detected (> 20%)" : null,
+        },
+        rawQuote: quote,
+      };
 
       return {
         content: [{
           type: "text" as const,
-          text: result
+          text: JSON.stringify(response),
         }]
       };
-
     } catch (error) {
       return {
         content: [{
           type: "text" as const,
-          text: `❌ Error fetching quote: ${error instanceof Error ? error.message : String(error)}`
+          text: JSON.stringify({
+            status: "error",
+            message: error instanceof Error ? error.message : String(error),
+          }),
         }],
         isError: true
       };

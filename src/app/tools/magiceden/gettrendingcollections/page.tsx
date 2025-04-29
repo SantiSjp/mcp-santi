@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { useState } from "react";
 import { createClient } from "@/lib/client";
+import HeaderTyping from "@/components/header";
 
 const CHAINS = [
   "ethereum", "abstract", "apechain", "arbitrum", "base", "berachain", "bsc", "monad-testnet", "polygon", "sei"
@@ -18,10 +17,6 @@ const SORT_OPTIONS = [
 ];
 
 export default function HomePage() {
-  const fullText = "Tools/MagicEden/GetTrendingCollections";
-  const [displayedText, setDisplayedText] = useState("");
-  const [index, setIndex] = useState(0);
-
   const [chain, setChain] = useState("monad-testnet");
   const [period, setPeriod] = useState("1d");
   const [sortBy, setSortBy] = useState("sales");
@@ -33,16 +28,6 @@ export default function HomePage() {
 
   const [displayPage, setDisplayPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
-
-  useEffect(() => {
-    if (index < fullText.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedText((prev) => prev + fullText[index]);
-        setIndex((prev) => prev + 1);
-      }, 50);
-      return () => clearTimeout(timeout);
-    }
-  }, [index, fullText]);
 
   const fetchTrendingCollections = async () => {
     setLoading(true);
@@ -108,10 +93,11 @@ export default function HomePage() {
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
       {/* TÍTULO */}
       <div className="absolute top-8 w-full flex justify-center">
-        <h1 className="text-2xl flex items-center">
-          {displayedText}
-          <span className="ml-2 animate-blink">█</span>
-        </h1>
+        <HeaderTyping 
+          text="Tools/MagicEden/GetTrendingCollectionws" 
+          className="text-3xl" 
+          speed={50} 
+        />
       </div>
 
       {/* FORMULÁRIO */}

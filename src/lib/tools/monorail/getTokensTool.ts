@@ -34,30 +34,51 @@ export const getTokensTool = {
         return {
           content: [{
             type: "text" as const,
-            text: "📭 No tokens found matching the criteria."
+            text: JSON.stringify({
+              status: "empty",
+              message: "No tokens found matching the criteria.",
+              metadata: {
+                find: find || null,
+                offset: parsedOffset,
+                limit: parsedLimit
+              },
+              tokens: []
+            })
           }]
         };
       }
 
-      const summary = tokens.map((token, idx) => (
-        `${idx + 1}. ${token.name || "Unnamed"} (${token.symbol || "-"})\n` +
-        `   🪙 Address: ${token.address}\n` +
-        `   🔢 Decimals: ${token.decimals}\n` +
-        `   🎯 Balance: ${token.balance}\n` +
-        `   📚 Categories: ${token.categories.length ? token.categories.join(", ") : "None"}`
-      )).join("\n\n");
+      const response = {
+        status: "success",
+        metadata: {
+          find: find || null,
+          offset: parsedOffset,
+          limit: parsedLimit
+        },
+        tokens: tokens.map((token) => ({
+          name: token.name || "Unnamed",
+          symbol: token.symbol || "-",
+          address: token.address,
+          decimals: token.decimals,
+          balance: token.balance,
+          categories: token.categories || []
+        }))
+      };
 
       return {
         content: [{
           type: "text" as const,
-          text: `📄 Tokens Found:\n\n${summary}`
+          text: JSON.stringify(response),
         }]
       };
     } catch (error) {
       return {
         content: [{
           type: "text" as const,
-          text: `❌ Error fetching tokens: ${error instanceof Error ? error.message : String(error)}`
+          text: JSON.stringify({
+            status: "error",
+            message: error instanceof Error ? error.message : String(error)
+          })
         }],
         isError: true
       };

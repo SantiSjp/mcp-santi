@@ -1,61 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/client";
 import HeaderTyping from "@/components/header";
 
-const CHAINS = [
-  "ethereum",
-  "abstract",
-  "apechain",
-  "arbitrum",
-  "base",
-  "berachain",
-  "bsc",
-  "monad-testnet",
-  "polygon",
-  "sei",
-];
+export default function WalletBalancesPage() {
+  const fullText = "Tools/Monorail/GetWalletBalances";
+  const [displayedText, setDisplayedText] = useState("");
+  const [index, setIndex] = useState(0);
 
-const SORT_OPTIONS = [
-  "allTimeVolume",
-  "1DayVolume",
-  "7DayVolume",
-  "30DayVolume",
-];
-
-export default function HomePage() {
-  const [chain, setChain] = useState("monad-testnet");
-  const [sortBy, setSortBy] = useState("allTimeVolume");
   const [address, setAddress] = useState("");
-
+  const [balances, setBalances] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [collections, setCollections] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
 
   const [displayPage, setDisplayPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
+  useEffect(() => {
+    if (index < fullText.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedText((prev) => prev + fullText[index]);
+        setIndex((prev) => prev + 1);
+      }, 50);
+      return () => clearTimeout(timeout);
+    }
+  }, [index, fullText]);
 
-  const fetchCollections = async () => {
+  const fetchWalletBalances = async () => {
     setLoading(true);
-    setCollections([]);
     setError(null);
+    setBalances([]);
     setChecked(false);
+
     const client = await createClient();
 
-    try {      
-
-      const args: any = { chain, sortBy };
-
-      if (address.trim() !== "") {
-        args.contract = address.trim();
-      }
-
+    try {
       const result = await client.callTool({
-        name: "magiceden_get_collections",
-        arguments: args,
+        name: "monorail_get_wallet_balances",
+        arguments: { address: address.trim() },
       });
 
       const content = (result?.content as { type: string; text: string }[])?.[0];
@@ -63,17 +47,16 @@ export default function HomePage() {
       if (content?.type === "text") {
         const parsed = JSON.parse(content.text);
 
-        if (parsed.error) {
-          setError(parsed.error);
-        } else if (parsed.collections) {
-          setCollections(parsed.collections);
+        if (parsed.status === "error" || parsed.status === "empty") {
+          setError(parsed.message);
+        } else if (parsed.tokens) {
+          setBalances(parsed.tokens);
         } else {
           setError("Unexpected response format.");
         }
       } else {
         setError("Unexpected response format.");
       }
-
     } catch (error) {
       console.error(error);
       setError(error instanceof Error ? error.message : String(error));
@@ -86,7 +69,7 @@ export default function HomePage() {
   };
 
   const handleNextDisplayPage = () => {
-    if (displayPage * ITEMS_PER_PAGE < collections.length) {
+    if (displayPage * ITEMS_PER_PAGE < balances.length) {
       setDisplayPage(displayPage + 1);
     }
   };
@@ -97,93 +80,68 @@ export default function HomePage() {
     }
   };
 
-  const paginatedCollections = collections.slice(
+  const paginatedBalances = balances.slice(
     (displayPage - 1) * ITEMS_PER_PAGE,
     displayPage * ITEMS_PER_PAGE
   );
 
   return (
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
-      {/* TÍTULO */}
+      {/* Título */}
       <div className="absolute top-8 w-full flex justify-center">
         <HeaderTyping 
-          text="Tools/MagicEden/GetCollection" 
+          text="Tools/Monorail/GetWalletBalances" 
           className="text-3xl" 
           speed={50} 
         />
       </div>
 
-      {/* FORMULÁRIO */}
+      {/* Formulário */}
       <div className="flex flex-1 flex-col justify-center items-center gap-6 mt-32">
-        {/* Linha com 3 campos */}
-        <div className="flex gap-4 flex-wrap justify-center w-full max-w-6xl px-4">
-          <select
-            value={chain}
-            onChange={(e) => setChain(e.target.value)}
-            className="bg-black border-2 border-green-400 px-4 py-2 text-green-400 text-sm focus:outline-none focus:bg-green-400 focus:text-black transition-all w-64"
-          >
-            {CHAINS.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="bg-black border-2 border-green-400 px-4 py-2 text-green-400 text-sm focus:outline-none focus:bg-green-400 focus:text-black transition-all w-64"
-          >
-            {SORT_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-
+        <div className="flex gap-4 flex-wrap justify-center w-full max-w-7xl px-4">
           <input
             type="text"
-            placeholder="Optional: Contract address"
+            placeholder="Enter wallet address (0x...)"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="bg-black border-2 border-green-400 px-4 py-2 text-green-400 placeholder-green-600 text-sm focus:outline-none focus:bg-green-400 focus:text-black transition-all w-80"
+            className="bg-black border-2 border-green-400 px-4 py-2 text-green-400 placeholder-green-600 text-sm focus:outline-none focus:bg-green-400 focus:text-black transition-all w-[500px]"
           />
         </div>
 
         <button
-          onClick={fetchCollections}
-          disabled={loading}
+          onClick={fetchWalletBalances}
+          disabled={loading || address.trim() === ""}
           className="mt-4 border-2 border-green-400 px-8 py-4 text-xl hover:bg-green-400 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Loading..." : "Fetch Collections"}
+          {loading ? "Loading..." : "Fetch Balances"}
         </button>
 
         {/* Resultado */}
-        <div className="mt-8 w-11/12 max-w-6xl">
+        <div className="mt-8 w-11/12 max-w-7xl">
           {error && (
             <div className="border-2 border-red-400 text-red-400 p-4">
               {error}
             </div>
           )}
 
-          {collections.length > 0 && (
+          {balances.length > 0 && (
             <div className="border-2 border-green-400 p-4 w-full overflow-x-auto">
               <table className="w-full text-left border-collapse break-words">
                 <thead>
                   <tr>
-                    <th className="border-b-2 border-green-400 pb-2">Name</th>
+                    <th className="border-b-2 border-green-400 pb-2">Token Name</th>
                     <th className="border-b-2 border-green-400 pb-2">Symbol</th>
-                    <th className="border-b-2 border-green-400 pb-2">Floor Price</th>
-                    <th className="border-b-2 border-green-400 pb-2">Volume (All Time)</th>
+                    <th className="border-b-2 border-green-400 pb-2">Balance</th>
+                    <th className="border-b-2 border-green-400 pb-2">Categories</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedCollections.map((col, idx) => (
+                  {paginatedBalances.map((token, idx) => (
                     <tr key={idx} className="border-t border-green-400">
-                      <td className="py-2 break-all">{col.name}</td>
-                      <td className="py-2">{col.symbol}</td>
-                      <td className="py-2">{col.floorPrice !== null ? `${col.floorPrice} MON` : "N/A"}</td>
-                      <td className="py-2">{col.volumeAllTime !== null ? `${col.volumeAllTime} MON` : "N/A"}</td>
+                      <td className="py-2 break-all">{token.name}</td>
+                      <td className="py-2">{token.symbol}</td>
+                      <td className="py-2">{token.balance ?? "0"}</td>
+                      <td className="py-2">{token.categories.length > 0 ? token.categories.join(", ") : "None"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -191,15 +149,15 @@ export default function HomePage() {
             </div>
           )}
 
-          {checked && collections.length === 0 && !error && (
+          {checked && balances.length === 0 && !error && (
             <div className="border-2 border-yellow-400 text-yellow-400 p-4">
-              No collections found for this chain.
+              No token balances found for this address.
             </div>
           )}
         </div>
 
         {/* Paginação */}
-        {collections.length > 0 && (
+        {balances.length > 0 && (
           <div className="flex gap-6 mt-8 mb-12 justify-center">
             <button
               onClick={handlePrevDisplayPage}
@@ -211,7 +169,7 @@ export default function HomePage() {
             <span className="text-green-400 self-center">Page {displayPage}</span>
             <button
               onClick={handleNextDisplayPage}
-              disabled={loading || displayPage * ITEMS_PER_PAGE >= collections.length}
+              disabled={loading || displayPage * ITEMS_PER_PAGE >= balances.length}
               className="border-2 border-green-400 px-6 py-2 hover:bg-green-400 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Page
