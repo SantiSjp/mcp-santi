@@ -1,7 +1,7 @@
 import { TldParser, NetworkWithRpc } from '@onsol/tldparser';
 import { getAddress } from 'ethers';
 
-const RPC_URL = "https://monad-testnet.g.alchemy.com/v2/zdeR6kQcOgoJXh71neIxS3HKKg9s60eL";
+const RPC_URL = "https://monad-testnet.g.alchemy.com/v2/FZhCjyj9iYvSCrnRcV4CcDXKzFrfrp5m";
 const CHAIN_NAME = "monad";
 const CHAIN_ID = 0x279f;
 
