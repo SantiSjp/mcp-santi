@@ -24,10 +24,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-green-400 font-mono`}>
+        <div className="flex flex-col min-h-screen relative">
+          <main className="flex-1">
+            {children}
+          </main>
+          <footer className="w-full text-center text-sm py-2 absolute bottom-0">
+            <span className="text-green-400 font-mono">Built by Santi</span>
+          </footer>
+        </div>
       </body>
     </html>
   );

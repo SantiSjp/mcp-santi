@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // 👈 importar o roteador do Next.js
+import { useRouter } from "next/navigation"; // 👈 importa o useRouter
 
 export default function HomePage() {
-  const router = useRouter();
-  const fullText = "Monad Context Protocol Server";
+  const fullText = "Tools/Alldomains";
   const [displayedText, setDisplayedText] = useState("");
   const [index, setIndex] = useState(0);
+  const router = useRouter(); // 👈 inicializa o router
 
   useEffect(() => {
     if (index < fullText.length) {
@@ -20,10 +20,6 @@ export default function HomePage() {
     }
   }, [index, fullText]);
 
-  const handleStartClick = () => {
-    router.push("/tools");
-  };
-
   return (
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
       {/* TÍTULO NO TOPO */}
@@ -34,16 +30,29 @@ export default function HomePage() {
         </h1>
       </div>
 
-      {/* BOTÕES NO CENTRO */}
-      <div className="flex flex-1 justify-center items-center">
-        <div className="flex gap-10">
+      {/* BOTÕES CENTRALIZADOS */}
+      <div className="flex flex-1 flex-col justify-center items-center gap-10">
+        {/* Linha 1: 3 botões */}
+        <div className="flex gap-8">
           <button
-            onClick={handleStartClick}
+            onClick={() => router.push("blockvision/getaccountnft")}
             className="border-2 border-green-400 px-10 py-4 text-xl hover:bg-green-400 hover:text-black transition-all"
           >
-            Start
+            Get Account NFTs
           </button>
-        </div>
+          <button
+            onClick={() => router.push("blockvision/getaccounttoken")}
+            className="border-2 border-green-400 px-10 py-4 text-xl hover:bg-green-400 hover:text-black transition-all"
+          >
+            Get Account Tokens
+          </button>
+          <button
+            onClick={() => router.push("blockvision/getnamerecord")}
+            className="border-2 border-green-400 px-10 py-4 text-xl hover:bg-green-400 hover:text-black transition-all"
+          >
+            Get Token Holders
+          </button>
+        </div>        
       </div>
     </main>
   );
