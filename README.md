@@ -7,7 +7,7 @@
 
 ## 🧠 Overview
 
-**Monad Context Protocol (MCP)** is a full-featured, modular tool server and interface that lets you explore and interact with dozens of on-chain utilities across protocols. Inspired by the feel of a retro terminal, it delivers high-utility tool execution in a modern Next.js environment.
+**Monad Context Protocol, a play on words for Model Context Protocol (MCP)**, is a modular, full-featured toolchain with a frontend that lets you explore and interact with dozens of on-chain utilities across multiple protocols. Inspired by the feel of a retro terminal, it offers high-utility tool execution in a modern Next.js environment.
 
 Key features:
 - 🧰 Dozens of blockchain utilities grouped by provider
