@@ -35,6 +35,13 @@ import {getAccountTokensTool} from "../lib/tools/blockvision/getAccountTokensToo
 import {getAccountNFTsTool} from "../lib/tools/blockvision/getAccountNFTsTool";
 import {getMonadTokenHoldersTool} from "../lib/tools/blockvision/getTokenHoldersTool";
 
+// Codex
+import { getCodexNetworksTool } from "../lib/tools/codex/getNetworksTool";
+import { getNetworkStatusTool } from "../lib/tools/codex/getNetworkStatus";
+import { getMonadTokenInfoTool } from "../lib/tools/codex/gettokeninfo";
+import { getTokenPairsTool } from "../lib/tools/codex/getTokenPairsTool";
+import { getNftCollectionMetadataTool } from "../lib/tools/codex/getNftCollectionMetadataTool";
+
 export const mcpHandler = initializeMcpApiHandler(
   async (server) => {
 
@@ -82,7 +89,15 @@ export const mcpHandler = initializeMcpApiHandler(
       getAccountTokensTool,
       getAccountNFTsTool,
       getMonadTokenHoldersTool
-    ])
+    ]);
+    
+    await registerGroup("codex",[
+      getCodexNetworksTool,
+      getNetworkStatusTool,
+      getMonadTokenInfoTool,
+      getTokenPairsTool,
+      getNftCollectionMetadataTool
+    ]);
     
   },
   {

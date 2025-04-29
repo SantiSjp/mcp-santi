@@ -29,9 +29,9 @@ export default function HomePage() {
             All Domains
           </button>
           <button 
-          onClick={() => router.push("tools/alchemy")}
-          className="border-2 border-green-400 px-10 py-4 text-xl hover:bg-green-400 hover:text-black transition-all disabled-button">
-            Alchemy
+          onClick={() => router.push("tools/codex")}
+          className="border-2 border-green-400 px-10 py-4 text-xl hover:bg-green-400 hover:text-black transition-all">
+            Codex
           </button>
           <button 
           onClick={() => router.push("tools/magiceden")}
