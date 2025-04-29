@@ -274,7 +274,7 @@ export function initializeMcpApiHandler(
       );
       console.log(`Published requests:${sessionId}`, serializedRequest);
 
-      let timeout = setTimeout(async () => {
+      const timeout = setTimeout(async () => {
         await redis.unsubscribe(`responses:${sessionId}:${requestId}`);
         res.statusCode = 408;
         res.end("Request timed out");
@@ -343,7 +343,7 @@ function createFakeIncomingMessage(
   // Copy over the stream methods
   req.push = readable.push.bind(readable);
   req.read = readable.read.bind(readable);
-  // @ts-expect-error
+  // @ts-expect-error teste
   req.on = readable.on.bind(readable);
   req.pipe = readable.pipe.bind(readable);
 

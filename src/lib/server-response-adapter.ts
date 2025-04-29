@@ -42,7 +42,7 @@ export function createServerResponseAdapter(
       return fakeServerResponse;
     };
 
-    let bufferedData: Uint8Array[] = [];
+    const bufferedData: Uint8Array[] = [];
 
     const write = (
       chunk: Buffer | string,
