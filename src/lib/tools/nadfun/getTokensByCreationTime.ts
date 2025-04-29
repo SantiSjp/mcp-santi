@@ -1,3 +1,4 @@
+// src/tools/account/getTokensByCreationTime.ts
 import { z } from "zod";
 import { getTokensByCreationTime } from "../../clients/nadfun/nadfunApi";
 
@@ -6,6 +7,12 @@ const inputSchema = z.object({
   limit: z.number().int().min(1).default(10).nullable().transform((v) => v ?? 10)
 });
 
+function jsonSafeStringify(obj: any): string {
+  return JSON.stringify(obj, (_, value) =>
+    typeof value === 'bigint' ? value.toString() : value
+  );
+}
+
 export const getTokensByCreationTimeTool = {
   name: "nadfun_get_tokens_by_creation_time",
   description: "Get tokens ordered by their creation time (newest first).",
@@ -13,16 +20,32 @@ export const getTokensByCreationTimeTool = {
   handler: async ({ page, limit }: z.infer<typeof inputSchema>) => {
     try {
       const result = await getTokensByCreationTime(page, limit);
-      const formatted = result.order_token
-        .map((t: any, i: number) => `${i + 1}. ${t.token_info.name} (${t.token_info.symbol}) — ${t.market_info.price} MON`)
-        .join("\n");
+
+      const response = {
+        status: "success",
+        metadata: {
+          page,
+          limit,
+          count: result.order_token.length,
+        },
+        tokens: result.order_token,
+      };
 
       return {
-        content: [{ type: "text" as const, text: `🆕 Tokens mais recentes:\n\n${formatted}` }]
+        content: [{
+          type: "text" as const,
+          text: jsonSafeStringify(response),
+        }]
       };
     } catch (error) {
       return {
-        content: [{ type: "text" as const, text: `Erro ao buscar tokens por criação: ${error instanceof Error ? error.message : String(error)}` }],
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            status: "error",
+            message: error instanceof Error ? error.message : String(error),
+          }),
+        }],
         isError: true
       };
     }

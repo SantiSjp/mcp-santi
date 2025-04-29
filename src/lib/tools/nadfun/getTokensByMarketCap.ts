@@ -1,3 +1,4 @@
+// src/tools/nadfun/getTokensByMarketCapTool.ts
 import { z } from "zod";
 import { getTokensByMarketCap } from "../../clients/nadfun/nadfunApi";
 
@@ -13,6 +14,12 @@ const inputSchema = z.object({
   ).describe("Items per page")
 });
 
+function jsonSafeStringify(obj: any): string {
+  return JSON.stringify(obj, (_, value) =>
+    typeof value === 'bigint' ? value.toString() : value
+  );
+}
+
 export const getTokensByMarketCapTool = {
   name: "nadfun_get_tokens_by_market_cap",
   description: "Get tokens ordered by their market capitalization (highest first).",
@@ -20,16 +27,32 @@ export const getTokensByMarketCapTool = {
   handler: async ({ page, limit }: z.infer<typeof inputSchema>) => {
     try {
       const result = await getTokensByMarketCap(page, limit);
-      const formatted = result.order_token
-        .map((t: any, i: number) => `${i + 1}. ${t.token_info.name} (${t.token_info.symbol}) — ${t.market_info.price} MON`)
-        .join("\n");
+
+      const response = {
+        status: "success",
+        metadata: {
+          page,
+          limit,
+          count: result.order_token.length,
+        },
+        tokens: result.order_token,
+      };
 
       return {
-        content: [{ type: "text" as const, text: `💰 Tokens por capitalização de mercado:\n\n${formatted}` }]
+        content: [{
+          type: "text" as const,
+          text: jsonSafeStringify(response)
+        }]
       };
     } catch (error) {
       return {
-        content: [{ type: "text" as const, text: `Erro ao buscar tokens por market cap: ${error instanceof Error ? error.message : String(error)}` }],
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            status: "error",
+            message: error instanceof Error ? error.message : String(error)
+          })
+        }],
         isError: true
       };
     }

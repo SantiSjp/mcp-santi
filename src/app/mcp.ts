@@ -39,10 +39,8 @@ export const mcpHandler = initializeMcpApiHandler(
   async (server) => {
 
     async function registerGroup(groupName: string, tools: any[]) {
-      console.error(`\n🔹 Registering group: ${groupName}`);
       for (const tool of tools) {
         server.tool(tool.name, tool.description, tool.inputSchema.shape, tool.handler);
-        console.error(`  ✅ ${tool.name}`);
       }
     }
     

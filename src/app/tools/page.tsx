@@ -29,9 +29,9 @@ export default function HomePage() {
             All Domains
           </button>
           <button 
-          onClick={() => router.push("tools/blockvision")}
+          onClick={() => router.push("tools/alchemy")}
           className="border-2 border-green-400 px-10 py-4 text-xl hover:bg-green-400 hover:text-black transition-all disabled-button">
-            Blockvision
+            Alchemy
           </button>
           <button 
           onClick={() => router.push("tools/magiceden")}
@@ -47,7 +47,9 @@ export default function HomePage() {
           className="border-2 border-green-400 px-10 py-4 text-xl hover:bg-green-400 hover:text-black transition-all">
             Monorail
           </button>
-          <button className="border-2 border-green-400 px-10 py-4 text-xl hover:bg-green-400 hover:text-black transition-all disabled-button">
+          <button 
+          onClick={() => router.push("tools/nadfun")}
+          className="border-2 border-green-400 px-10 py-4 text-xl hover:bg-green-400 hover:text-black transition-all">
             Nad.Fun
           </button>
         </div>

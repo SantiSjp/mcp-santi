@@ -1,30 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createClient } from "@/lib/client";
 import HeaderTyping from "@/components/header";
 
-const CHAINS = [
-  "monad-testnet","ethereum", "abstract", "apechain", "arbitrum", "base", "berachain", "bsc", "polygon", "sei"
-];
-
-export default function HomePage() {
-  const fullText = "Tools/MagicEden/GetUserCollections";
+export default function CreatedTokensPage() {
+  const fullText = "Tools/Nadfun/GetCreatedTokens";
   const [displayedText, setDisplayedText] = useState("");
   const [index, setIndex] = useState(0);
 
-  const [chain, setChain] = useState("monad-testnet");
   const [address, setAddress] = useState("");
-
   const [loading, setLoading] = useState(false);
-  const [collections, setCollections] = useState<any[]>([]);
+  const [tokens, setTokens] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
 
-  const [displayPage, setDisplayPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   useEffect(() => {
     if (index < fullText.length) {
@@ -36,19 +28,24 @@ export default function HomePage() {
     }
   }, [index, fullText]);
 
-  const fetchUserCollections = async () => {
+  const fetchCreatedTokens = async (fetchPage = 1) => {
+    if (!address.trim()) return;
+
     setLoading(true);
-    setCollections([]);
     setError(null);
+    setTokens([]);
     setChecked(false);
     
     const client = await createClient();
-  
 
     try {
       const result = await client.callTool({
-        name: "magiceden_get_user_collections",
-        arguments: { chain, user: address.trim() },
+        name: "nadfun_get_created_tokens",
+        arguments: { 
+          address: address.trim(),
+          page: fetchPage,
+          limit: ITEMS_PER_PAGE
+        },
       });
 
       const content = (result?.content as { type: string; text: string }[])?.[0];
@@ -58,15 +55,15 @@ export default function HomePage() {
 
         if (parsed.status === "error") {
           setError(parsed.message);
-        } else if (parsed.collections) {
-          setCollections(parsed.collections);
+        } else if (parsed.tokens) {
+          setTokens(parsed.tokens);
         } else {
           setError("Unexpected response format.");
         }
       } else {
         setError("Unexpected response format.");
       }
-      
+
     } catch (error) {
       console.error(error);
       setError(error instanceof Error ? error.message : String(error));
@@ -74,33 +71,34 @@ export default function HomePage() {
       client.close();
       setLoading(false);
       setChecked(true);
-      setDisplayPage(1);
     }
   };
 
-  const handleNextDisplayPage = () => {
-    if (displayPage * ITEMS_PER_PAGE < collections.length) {
-      setDisplayPage(displayPage + 1);
+  const handleNextPage = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchCreatedTokens(nextPage);
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      const prevPage = page - 1;
+      setPage(prevPage);
+      fetchCreatedTokens(prevPage);
     }
   };
 
-  const handlePrevDisplayPage = () => {
-    if (displayPage > 1) {
-      setDisplayPage(displayPage - 1);
-    }
+  const handleSearch = () => {
+    setPage(1);
+    fetchCreatedTokens(1);
   };
-
-  const paginatedCollections = collections.slice(
-    (displayPage - 1) * ITEMS_PER_PAGE,
-    displayPage * ITEMS_PER_PAGE
-  );
 
   return (
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
       {/* TÍTULO */}
       <div className="absolute top-8 w-full flex justify-center">
         <HeaderTyping 
-          text="Tools/MagicEden/GetUserCollections" 
+          text="Tools/Nadfun/GetCreatedTokens" 
           className="text-3xl" 
           speed={50} 
         />
@@ -108,23 +106,10 @@ export default function HomePage() {
 
       {/* FORMULÁRIO */}
       <div className="flex flex-1 flex-col justify-center items-center gap-6 mt-32">
-        {/* Linha de Inputs */}
         <div className="flex gap-4 flex-wrap justify-center w-full max-w-7xl px-4">
-          <select
-            value={chain}
-            onChange={(e) => setChain(e.target.value)}
-            className="bg-black border-2 border-green-400 px-4 py-2 text-green-400 text-sm focus:outline-none focus:bg-green-400 focus:text-black transition-all w-52"
-          >
-            {CHAINS.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
           <input
             type="text"
-            placeholder="Enter user wallet address"
+            placeholder="Enter creator wallet address (0x...)"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             className="bg-black border-2 border-green-400 px-4 py-2 text-green-400 placeholder-green-600 text-sm focus:outline-none focus:bg-green-400 focus:text-black transition-all w-[500px]"
@@ -132,39 +117,41 @@ export default function HomePage() {
         </div>
 
         <button
-          onClick={fetchUserCollections}
+          onClick={handleSearch}
           disabled={loading || address.trim() === ""}
           className="mt-4 border-2 border-green-400 px-8 py-4 text-xl hover:bg-green-400 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Loading..." : "Fetch Collections"}
+          {loading ? "Loading..." : "Fetch Created Tokens"}
         </button>
 
-        {/* Resultado */}
-        <div className="mt-8 w-11/12 max-w-7xl">
+        {/* RESULTADO */}
+        <div className="mt-8 w-11/12 max-w-7xl mb-8">
           {error && (
             <div className="border-2 border-red-400 text-red-400 p-4">
               {error}
             </div>
           )}
 
-          {collections.length > 0 && (
+          {tokens.length > 0 && (
             <div className="border-2 border-green-400 p-4 w-full overflow-x-auto">
               <table className="w-full text-left border-collapse break-words">
                 <thead>
                   <tr>
-                    <th className="border-b-2 border-green-400 pb-2">Collection Name</th>
-                    <th className="border-b-2 border-green-400 pb-2">Floor Price (MON)</th>
-                    <th className="border-b-2 border-green-400 pb-2">Tokens Owned</th>
-                    <th className="border-b-2 border-green-400 pb-2">Tokens On Sale</th>
+                    <th className="border-b-2 border-green-400 pb-2">Name</th>
+                    <th className="border-b-2 border-green-400 pb-2">Symbol</th>
+                    <th className="border-b-2 border-green-400 pb-2">Price (MON)</th>
+                    <th className="border-b-2 border-green-400 pb-2">Supply</th>
+                    <th className="border-b-2 border-green-400 pb-2">Market Cap</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedCollections.map((col, idx) => (
+                  {tokens.map((t, idx) => (
                     <tr key={idx} className="border-t border-green-400">
-                      <td className="py-2 break-all">{col.name}</td>
-                      <td className="py-2">{col.floorPrice !== null ? `${col.floorPrice} MON` : "N/A"}</td>
-                      <td className="py-2">{col.tokensOwned !== null ? col.tokensOwned : "N/A"}</td>
-                      <td className="py-2">{col.tokensOnSale !== null ? col.tokensOnSale : "N/A"}</td>
+                      <td className="py-2 break-words">{t.token.name}</td>
+                      <td className="py-2">{t.token.symbol}</td>
+                      <td className="py-2">{t.price}</td>
+                      <td className="py-2">{t.token.total_supply}</td>
+                      <td className="py-2">{t.market_cap}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -172,27 +159,27 @@ export default function HomePage() {
             </div>
           )}
 
-          {checked && collections.length === 0 && !error && (
+          {checked && tokens.length === 0 && !error && (
             <div className="border-2 border-yellow-400 text-yellow-400 p-4">
-              No collections found for this user.
+              No tokens found for this creator.
             </div>
           )}
         </div>
 
-        {/* Paginação */}
-        {collections.length > 0 && (
-          <div className="flex gap-6 mt-8 mb-12 justify-center">
+        {/* PAGINAÇÃO */}
+        {tokens.length > 0 && (
+          <div className="flex gap-6 mt-4 mb-12 justify-center">
             <button
-              onClick={handlePrevDisplayPage}
-              disabled={loading || displayPage === 1}
+              onClick={handlePrevPage}
+              disabled={page === 1 || loading}
               className="border-2 border-green-400 px-6 py-2 hover:bg-green-400 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous Page
             </button>
-            <span className="text-green-400 self-center">Page {displayPage}</span>
+            <span className="text-green-400 self-center">Page {page}</span>
             <button
-              onClick={handleNextDisplayPage}
-              disabled={loading || displayPage * ITEMS_PER_PAGE >= collections.length}
+              onClick={handleNextPage}
+              disabled={tokens.length < ITEMS_PER_PAGE || loading}
               className="border-2 border-green-400 px-6 py-2 hover:bg-green-400 hover:text-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Page
