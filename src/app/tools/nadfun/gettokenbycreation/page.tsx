@@ -5,10 +5,6 @@ import { createClient } from "@/lib/client";
 import HeaderTyping from "@/components/header";
 
 export default function TokensByCreationTimePage() {
-  const fullText = "Tools/Nadfun/GetTokensByCreationTime";
-  const [displayedText, setDisplayedText] = useState("");
-  const [index, setIndex] = useState(0);
-
   const [tokens, setTokens] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,16 +12,6 @@ export default function TokensByCreationTimePage() {
 
   const [page, setPage] = useState(1);
   const LIMIT = 5;
-
-  useEffect(() => {
-    if (index < fullText.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedText((prev) => prev + fullText[index]);
-        setIndex((prev) => prev + 1);
-      }, 50);
-      return () => clearTimeout(timeout);
-    }
-  }, [index, fullText]);
 
   const fetchTokens = async () => {
     setLoading(true);
@@ -84,7 +70,6 @@ export default function TokensByCreationTimePage() {
 
   return (
     <main className="flex flex-col min-h-screen bg-black text-green-400 font-mono relative">
-      {/* Header */}
       <div className="absolute top-8 w-full flex justify-center">
         <HeaderTyping
           text="Tools/Nadfun/GetTokensByCreationTime"
@@ -93,7 +78,6 @@ export default function TokensByCreationTimePage() {
         />
       </div>
 
-      {/* Content */}
       <div className="flex flex-1 flex-col justify-center items-center gap-6 mt-32 px-4">
         <button
           onClick={fetchTokens}
