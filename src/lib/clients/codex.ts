@@ -2,7 +2,7 @@ import { Codex } from "@codex-data/sdk";
 import { Network } from "@codex-data/sdk/dist/resources/graphql";
 
 // Você pode usar variáveis de ambiente ou setar diretamente sua chave
-const CODEX_API_KEY = process.env.CODEX_API_KEY || "4b920640ab3c06bad2ca5699fa7fce41f3fbd3ef";
+const CODEX_API_KEY = process.env.CODEX_API_KEY as string;
 
 export interface TokenPairData {
   token1Data: {

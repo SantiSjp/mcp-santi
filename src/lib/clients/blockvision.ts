@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const BLOCKVISION_API_KEY = process.env.BLOCKVISION_API_KEY as string;
 const BLOCKVISION_BASE_URL = "https://api.blockvision.org/v2/monad";
-const BLOCKVISION_API_KEY = "2wNfH3LsPI6X8jgR05cE6RntLwD";
 
 if (!BLOCKVISION_API_KEY) {
   throw new Error("Missing BLOCKVISION_API_KEY environment variable.");

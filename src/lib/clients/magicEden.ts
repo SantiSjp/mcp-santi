@@ -2,16 +2,16 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const BASE_URL = "https://api-mainnet.magiceden.dev/v3/rtp";
-const API_KEY =  "d79f52a1-1a8c-42a0-9d6b-7afaf5a6e54c";
+const MAGICEDEN_API_KEY =  process.env.MAGICEDEN_API_KEY as string;
 
-if (!API_KEY) {
+if (!MAGICEDEN_API_KEY) {
   throw new Error("Missing MAGIC_EDEN_API_KEY environment variable.");
 }
 
 async function fetchJson(url: string) {
   const res = await fetch(url, {
     headers: {
-      Authorization: `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${MAGICEDEN_API_KEY}`,
       "Content-Type": "application/json",
     },
   });
